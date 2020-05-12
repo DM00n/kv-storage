@@ -3,11 +3,13 @@
 #ifndef INCLUDE_HEADER_HPP_
 #define INCLUDE_HEADER_HPP_
 
+#include <vector>
+#include <string>
 #include <rocksdb/db.h>
 #include <rocksdb/slice.h>
 #include <rocksdb/options.h>
 #include <iostream>
-#include "picosha2.h"
+#include <picosha2.h>
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/file.hpp>
@@ -19,7 +21,15 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sinks.hpp>
 
-using namespace rocksdb;
+using rocksdb::DB;
+using rocksdb::DBOptions;
+using rocksdb::ColumnFamilyOptions;
+using rocksdb::ReadOptions;
+using rocksdb::WriteOptions;
+using rocksdb::Options;
+using rocksdb::Status;
+using rocksdb::ColumnFamilyDescriptor;
+using rocksdb::ColumnFamilyHandle;
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
@@ -32,14 +42,14 @@ public:
     void circle();
     void full_open(DB *db);
     void add_column_families(DB *db);
-    void printer(DB *db, const std::vector<ColumnFamilyHandle*>& handle);
+    void printer(DB *db, const std::vector
+	     <ColumnFamilyHandle*>& handle);
     void writer();
     void log_setup();
     void logging(std::string family, std::string key, std::string value);
 private:
     DB* first_db;     // переменная для БД
     DB* second_db;
-    //std::string _db_path;
     Options options;    // переменная для опций
     std::vector<std::string> string_families;
     std::vector<ColumnFamilyDescriptor> column_families;

@@ -2,7 +2,10 @@
 
 #include <header.hpp>
 
-KVS::KVS(std::string log, unsigned count, std::string out):_log_level(std::move(log)), _thread_count(count), _output(std::move(out)) {
+KVS::KVS(std::string log, unsigned count, std::string out):
+    _log_level(std::move(log)),
+   	_thread_count(count),
+	_output(std::move(out)) {
     options.create_if_missing = true;     // "создать БД, если не существует"
     if (_output.empty()) _output = "/tmp/newDB";
 //    if (!first_db) delete first_db;
@@ -28,7 +31,8 @@ void KVS::full_open(DB *db) {
     for (auto& i : string_families){
         column_families.emplace_back(i, ColumnFamilyOptions());
     }
-    Status status = DB::Open(options, input, column_families, &first_handles, &first_db);
+    Status status = DB::
+	    Open(options, input, column_families, &first_handles, &first_db);
     assert(status.ok());
 }
 
@@ -36,11 +40,12 @@ void KVS::circle() {
     log_setup();
     full_open(first_db);
     add_column_families(second_db);
-    Status status = DB::Open(options, _output, column_families, &second_handles, &second_db);
+    Status status = DB::
+	    Open(options, _output, column_families, &second_handles, &second_db);
     assert(status.ok());
     writer();
     printer(first_db, first_handles);
-    std::cout<<std::endl;
+    std::cout << std::endl;
     printer(second_db, second_handles);
 }
 
@@ -50,7 +55,6 @@ void KVS::printer(DB* db, const std::vector<ColumnFamilyHandle*>& handle) {
         Iterator* it = db->NewIterator(ReadOptions(), i);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
             logging(i->GetName(), it->key().ToString(), it->value().ToString());
-            //std::cout<< "key: " << it->key().ToString() << " value: " << it->value().ToString() << std::endl;
         }
     }
 }
@@ -61,7 +65,8 @@ void KVS::add_column_families(DB *db) {
     for (const auto& j : column_families){
         if (j.name == "default") continue;
         ColumnFamilyHandle* cf;
-        Status s = second_db->CreateColumnFamily(ColumnFamilyOptions(), j.name, &cf);
+        Status s = second_db->
+		    CreateColumnFamily(ColumnFamilyOptions(), j.name, &cf);
         assert(s.ok());
     }
     delete second_db;
@@ -70,10 +75,13 @@ void KVS::add_column_families(DB *db) {
 void KVS::writer() {
     int index = 0;
     for (auto i : second_handles){
-        Iterator* it1 = first_db->NewIterator(ReadOptions(), first_handles[index]);
+        Iterator* it1 = first_db->
+		    NewIterator(ReadOptions(), first_handles[index]);
         for (it1->SeekToFirst(); it1->Valid(); it1->Next()) {
-            auto hash = picosha2::hash256_hex_string(it1->key().ToString() + it1->value().ToString());
-            Status s = second_db->Put(WriteOptions(), i, it1->key().ToString(), hash);
+            auto hash = picosha2::
+			    hash256_hex_string(it1->key().ToString() + it1->value().ToString());
+            Status s = second_db->
+			    Put(WriteOptions(), i, it1->key().ToString(), hash);
             assert(s.ok());
             //logging(i->GetName(), it1->key().ToString(), hash);
         }
@@ -88,11 +96,7 @@ void KVS::log_setup() {
             boost::make_shared< boost::log::sinks::text_file_backend >(
                     keywords::file_name = "/tmp/log",
                     keywords::rotation_size = 5 * 1024 * 1024,
-                    keywords::format = "%Message%"
-//                  keywords::time_based_rotation =
-//                            boost::log::sinks::file::
-//                            rotation_at_time_point(12, 0, 0)
-            );
+                    keywords::format = "%Message%");
 
     typedef boost::log::sinks::synchronous_sink
             < boost::log::sinks::text_file_backend > sink_t;
@@ -108,10 +112,10 @@ void KVS::log_setup() {
 
 void KVS::logging(std::string family, std::string key, std::string value) {
     if (_log_level == "trace"){
-        BOOST_LOG_TRIVIAL(trace) << "Family: "<< family << " key: " << key << " value: " << value;
-    }
-    else
-    {
-        BOOST_LOG_TRIVIAL(info) << "Family: "<< family << " key: " << key << " value: " << value;
+        BOOST_LOG_TRIVIAL(trace) << "Family: "<< family << " key: " 
+		<< key << " value: " << value;
+    }else{
+        BOOST_LOG_TRIVIAL(info) << "Family: "<< family << " key: " 
+		<< key << " value: " << value;
     }
 }
