@@ -27,6 +27,23 @@ string(APPEND CMAKE_CXX_FLAGS " -Wshadow -Wnon-virtual-dtor")
 
 hunter_add_package(GTest)
 find_package(GTest CONFIG REQUIRED)
+hunter_add_package(Boost
+        COMPONENTS
+        program_options
+        thread
+        log
+        filesystem)
+find_package(Boost
+        CONFIG REQUIRED
+        program_options
+        thread
+        log
+        log_setup
+        filesystem)
+
+hunter_add_package(rocksdb)
+find_package(RocksDB CONFIG REQUIRED)
+find_package(Threads)
 
 # TODO: change template word to project name and delete this comment
 add_library(template STATIC
