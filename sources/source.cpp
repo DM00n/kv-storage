@@ -4,8 +4,8 @@
 
 KVS::KVS(std::string log, unsigned count, std::string out):
     _log_level(std::move(log)),
-   	_thread_count(count),
-	_output(std::move(out)) {
+    _thread_count(count),
+    _output(std::move(out)) {
     options.create_if_missing = true;     // "создать БД, если не существует"
     if (_output.empty()) _output = "/tmp/newDB";
 //    if (!first_db) delete first_db;
@@ -32,7 +32,7 @@ void KVS::full_open(DB *db) {
         column_families.emplace_back(i, ColumnFamilyOptions());
     }
     Status status = DB::
-	    Open(options, input, column_families, &first_handles, &first_db);
+        Open(options, input, column_families, &first_handles, &first_db);
     assert(status.ok());
 }
 
@@ -41,7 +41,7 @@ void KVS::circle() {
     full_open(first_db);
     add_column_families(second_db);
     Status status = DB::
-	    Open(options, _output, column_families, &second_handles, &second_db);
+        Open(options, _output, column_families, &second_handles, &second_db);
     assert(status.ok());
     writer();
     printer(first_db, first_handles);
@@ -66,7 +66,7 @@ void KVS::add_column_families(DB *db) {
         if (j.name == "default") continue;
         ColumnFamilyHandle* cf;
         Status s = second_db->
-		    CreateColumnFamily(ColumnFamilyOptions(), j.name, &cf);
+            CreateColumnFamily(ColumnFamilyOptions(), j.name, &cf);
         assert(s.ok());
     }
     delete second_db;
@@ -76,12 +76,12 @@ void KVS::writer() {
     int index = 0;
     for (auto i : second_handles){
         Iterator* it1 = first_db->
-		    NewIterator(ReadOptions(), first_handles[index]);
+            NewIterator(ReadOptions(), first_handles[index]);
         for (it1->SeekToFirst(); it1->Valid(); it1->Next()) {
             auto hash = picosha2::
-			    hash256_hex_string(it1->key().ToString() + it1->value().ToString());
+                hash256_hex_string(it1->key().ToString() + it1->value().ToString());
             Status s = second_db->
-			    Put(WriteOptions(), i, it1->key().ToString(), hash);
+                Put(WriteOptions(), i, it1->key().ToString(), hash);
             assert(s.ok());
             //logging(i->GetName(), it1->key().ToString(), hash);
         }
@@ -112,10 +112,10 @@ void KVS::log_setup() {
 
 void KVS::logging(std::string family, std::string key, std::string value) {
     if (_log_level == "trace"){
-        BOOST_LOG_TRIVIAL(trace) << "Family: "<< family << " key: " 
-		<< key << " value: " << value;
+        BOOST_LOG_TRIVIAL(trace) << "Family: "<< family << " key: "
+        << key << " value: " << value;
     }else{
-        BOOST_LOG_TRIVIAL(info) << "Family: "<< family << " key: " 
-		<< key << " value: " << value;
+        BOOST_LOG_TRIVIAL(info) << "Family: "<< family << " key: "
+        << key << " value: " << value;
     }
 }

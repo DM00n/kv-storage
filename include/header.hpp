@@ -43,7 +43,7 @@ public:
     void full_open(DB *db);
     void add_column_families(DB *db);
     void printer(DB *db, const std::vector
-	     <ColumnFamilyHandle*>& handle);
+         <ColumnFamilyHandle*>& handle);
     void writer();
     void log_setup();
     void logging(std::string family, std::string key, std::string value);
