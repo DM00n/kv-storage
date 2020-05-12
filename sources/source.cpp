@@ -2,7 +2,6 @@
 
 #include <header.hpp>
 
-
 KVS::KVS(std::string log, unsigned count, std::string out):_log_level(std::move(log)), _thread_count(count), _output(std::move(out)) {
     options.create_if_missing = true;     // "создать БД, если не существует"
     if (_output.empty()) _output = "/tmp/newDB";
@@ -47,10 +46,11 @@ void KVS::circle() {
 
 void KVS::printer(DB* db, const std::vector<ColumnFamilyHandle*>& handle) {
     for (auto i : handle){
-        std::cout << "Family: "<< i->GetName() << std::endl;
+        //std::cout << "Family: "<< i->GetName() << std::endl;
         Iterator* it = db->NewIterator(ReadOptions(), i);
         for (it->SeekToFirst(); it->Valid(); it->Next()) {
-            std::cout<< "key: " << it->key().ToString() << " value: " << it->value().ToString() << std::endl;
+            logging(i->GetName(), it->key().ToString(), it->value().ToString());
+            //std::cout<< "key: " << it->key().ToString() << " value: " << it->value().ToString() << std::endl;
         }
     }
 }
@@ -75,19 +75,18 @@ void KVS::writer() {
             auto hash = picosha2::hash256_hex_string(it1->key().ToString() + it1->value().ToString());
             Status s = second_db->Put(WriteOptions(), i, it1->key().ToString(), hash);
             assert(s.ok());
-            logging(i->GetName(), it1->key().ToString(), hash);
+            //logging(i->GetName(), it1->key().ToString(), hash);
         }
         index++;
     }
 }
 
 void KVS::log_setup() {
-
     boost::shared_ptr< logging::core > core = logging::core::get();
 
     boost::shared_ptr< boost::log::sinks::text_file_backend > backend =
             boost::make_shared< boost::log::sinks::text_file_backend >(
-                    keywords::file_name = "/tmp/log.log",
+                    keywords::file_name = "/tmp/log",
                     keywords::rotation_size = 5 * 1024 * 1024,
                     keywords::format = "%Message%"
 //                  keywords::time_based_rotation =
@@ -98,24 +97,21 @@ void KVS::log_setup() {
     typedef boost::log::sinks::synchronous_sink
             < boost::log::sinks::text_file_backend > sink_t;
     boost::shared_ptr< sink_t > sink(new sink_t(backend));
-    //switch log-level
-    if (_log_level == "trace") sink->set_filter(logging::trivial::severity >= logging::trivial::trace);
-    else sink->set_filter(logging::trivial::severity >= logging::trivial::info);
-    sink->set_filter(logging::trivial::severity >= logging::trivial::info);
+//    sink ->set_filter(logging::trivial::severity >= logging::trivial::info);
     core->add_sink(sink);
-//    logging::add_console_log
-//            (
-//                    std::cout,
-//                    logging::keywords::format =
-//                            "%Message%");
+    logging::add_console_log
+            (
+                    std::cout,
+                    logging::keywords::format =
+                            "%Message%");
 }
 
 void KVS::logging(std::string family, std::string key, std::string value) {
     if (_log_level == "trace"){
-        BOOST_LOG_TRIVIAL(trace) << "Family: "<< family << " key: " << key << " hash: " << value;
+        BOOST_LOG_TRIVIAL(trace) << "Family: "<< family << " key: " << key << " value: " << value;
     }
     else
     {
-        BOOST_LOG_TRIVIAL(info) << "Family: "<< family << " key: " << key << " hash: " << value;
+        BOOST_LOG_TRIVIAL(info) << "Family: "<< family << " key: " << key << " value: " << value;
     }
 }
