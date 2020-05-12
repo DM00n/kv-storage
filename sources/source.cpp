@@ -32,7 +32,7 @@ void KVS::full_open(DB *db) {
         column_families.emplace_back(i, ColumnFamilyOptions());
     }
     Status status = DB::
-        Open(options, input, column_families, &first_handles, &first_db);
+        Open(options, input, column_families, &first_handles, &db);
     assert(status.ok());
 }
 
@@ -60,16 +60,16 @@ void KVS::printer(DB* db, const std::vector<ColumnFamilyHandle*>& handle) {
 }
 
 void KVS::add_column_families(DB *db) {
-    Status status = DB::Open(options, _output, &second_db);
+    Status status = DB::Open(options, _output, &db);
     assert(status.ok());
     for (const auto& j : column_families){
         if (j.name == "default") continue;
         ColumnFamilyHandle* cf;
-        Status s = second_db->
+        Status s = db->
             CreateColumnFamily(ColumnFamilyOptions(), j.name, &cf);
         assert(s.ok());
     }
-    delete second_db;
+    delete db;
 }
 
 void KVS::writer() {
