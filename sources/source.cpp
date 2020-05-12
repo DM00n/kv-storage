@@ -79,7 +79,8 @@ void KVS::writer() {
             NewIterator(ReadOptions(), first_handles[index]);
         for (it1->SeekToFirst(); it1->Valid(); it1->Next()) {
             auto hash = picosha2::
-                hash256_hex_string(it1->key().ToString() + it1->value().ToString());
+                hash256_hex_string(it1->key().ToString() +
+                it1->value().ToString());
             Status s = second_db->
                 Put(WriteOptions(), i, it1->key().ToString(), hash);
             assert(s.ok());
